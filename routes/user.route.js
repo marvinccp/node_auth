@@ -36,7 +36,6 @@ route.post("/register", async (req, res) => {
     }
 
     //hash the password
-
     const salt = await bcrypt.genSalt(saltRounds);
     const hashPassword = await bcrypt.hash(req.body.password, salt);
     req.body.password = hashPassword;
@@ -44,11 +43,11 @@ route.post("/register", async (req, res) => {
     const user = new userModel(req.body);
     await user.save();
 
-    const token = await jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
+    const token =  jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
       expiresIn: process.env.JWT_EXPIRE,
     });
     return res
-      .cookie({ token: token })
+      .cookie( 'token', token )
       .json({ succes: true, message: "Register ok", data: user });
   } catch (error) {
     return res.json({ error: error });
@@ -102,15 +101,17 @@ route.post("/login", async (req, res) => {
 //get users
 route.get("/users", isAuth, async (req, res) => {
   try {
-    const user = await userModel.find();
+    const users = await userModel.find();
     if (!user) {
       return res.json({ message: "Not Found" });
     }
-    return res.json({ users: user });
+    return res.json({ users: users });
   } catch (error) {
     return res.json({ error: error });
   }
 });
+
+
 //get user
 route.get("/user/:_id", isAuth, async (req, res) => {
   try {
